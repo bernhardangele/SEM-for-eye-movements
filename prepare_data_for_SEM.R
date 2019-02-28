@@ -30,5 +30,4 @@ data_for_SEM <- data.DT %>%
            ) %>% 
   summarize(fixation_time = mean_narm(value))
 
-  
-    
+save(data_for_SEM, file = "data for SEM.RData")
