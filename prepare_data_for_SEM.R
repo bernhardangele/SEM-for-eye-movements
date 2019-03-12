@@ -1,12 +1,16 @@
 rm(list = ls())
 
+library(reshape)
 library(tidyverse)
 
 load(file = "data4000_ffd.RData")
 
 mean_narm <- function(x) mean(x, na.rm = TRUE)
 
+data.DT$word_token_exp <- with(data.DT, paste(word_token, experiment, sep = "_"))
+
 data_for_SEM <- data.DT %>%
+  filter(experiment == "full") %>%
   group_by(word_token,   # unique identifier for a word within a sentence
            currentword,  # word number within sentence
            word,         # letter string of the word (commas etc. removed). Currently, this gives the high-frequency word only
@@ -30,4 +34,14 @@ data_for_SEM <- data.DT %>%
            ) %>% 
   summarize(fixation_time = mean_narm(value))
 
-save(data_for_SEM, file = "data for SEM.RData")
+# In the end, cast from the reshape package worked best here
+data_for_sem.c <- cast(data_for_SEM, value = "fixation_time", word_token + currentword + dv + bnc_freq + bnc_freq1 + bnc_freq2 + trigram_prob + trigram_prob1 + trigram_prob2 + p + p1 + p2 + cpos + cpos1 + cpos2 ~ n1 + n2 + target_freq, mean)
+
+data_for_SEM_FFD <- subset(data_for_SEM.c, dv == "FFD")
+
+data_for_SEM_SFD <- subset(data_for_SEM.c, dv == "SFD")
+
+data_for_SEM_GD <- subset(data_for_SEM.c, dv == "GD")
+
+
+save(data_for_SEM_FFD, data_for_SEM_GD, data_for_SEM_SFD, file = "data for SEM.RData")
